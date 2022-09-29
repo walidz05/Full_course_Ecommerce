@@ -1,6 +1,7 @@
 const {validationResult} = require('express-validator');
 const UserModel = require("../models/User");
 const {createToken,hashPassword,verfiyPassword} = require("../services/authServices");
+const bcrypt = require("bcrypt");
 const {JWT_SECRET} = require('../config/envConfig');
 
 
@@ -74,7 +75,7 @@ exports.login = async (req,res) => {
         const extractedErrors = [];
         errors
           .array({ onlyFirstError: true })
-          .map((err) => extractedErrors.push({ [err.param]: err.msg }));
+          .map((err) => extractedErrors.push({ msg: err.msg }));
 
         return res.status(422).json({
           errors: extractedErrors,
@@ -88,35 +89,31 @@ exports.login = async (req,res) => {
             return res
               .status(400)
               .json({ errors: [{ msg: "email not found" }] });
-          } else {
+          } 
 
-            const passwordResult = verfiyPassword(
-              password,
-              user.password
-            );          
+          else {
 
-            if (passwordResult) {
+            const compare = await verfiyPassword(password,user.password);
+          
+            if (compare) {
 
-              if(user.admin)
-              {
-                   const token = createToken(user, JWT_SECRET);
-                   return res.status(200).json({
-                     msg: "login successfuly",
-                     token,
-                     admin:true
-                   });
+              console.log(compare);
+
+              if (user.admin) {
+                const token = createToken(user, JWT_SECRET);
+                return res.status(200).json({
+                  msg: "login successfuly",
+                  token,
+                  admin: true,
+                });
+              } else {
+                const token = createToken(user, JWT_SECRET);
+                return res.status(200).json({
+                  msg: "login successfuly",
+                  token,
+                  admin: false,
+                });
               }
-
-              else {
-                   const token = createToken(user, JWT_SECRET);
-                   return res.status(200).json({
-                     msg: "login successfuly",
-                     token,
-                     admin: false,
-                   });      
-              }
-
-
             } else {
               return res
                 .status(400)
