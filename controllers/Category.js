@@ -104,29 +104,93 @@ class Category {
 
     try {
 
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+          const extractedErrors = [];
+          errors
+            .array({ onlyFirstError: true })
+            .map((err) => extractedErrors.push({ msg: err.msg }));
+
+          return res.status(422).json({
+            errors: extractedErrors,
+          });
+        }
+
       const {id,name} = req.body;
 
-      const findCategory = await categoryModel.findById({_id:id})
-
-      if(findCategory)
+      const findCategory = await categoryModel.findOne({id});
+    
+      if(findCategory.name != name)
       {
-
-          await categoryModel.findByIdAndUpdate({_id:id},{name});
-
-          return res.status(200).json({
-            msg:'update succesfuly',
-          })
+            await categoryModel.updateOne({ _id: id }, { $set: { name } });
+            return res.status(200).json({
+              msg: "update succesfuly",
+            });
       }
-      else {
-          return res.status(404).json({
-            error:[{msg:'category not found'}]
-          });
-      }
+
+       return res.status(400).json({
+         errors: [{ msg: "category already exist" }],
+       });
+
+       
+      
+      
       
     } catch (error) {
         return res.status(500).json({
           error
         });
+    }
+
+  }
+
+  async deletedCategory(req,res) {
+    
+    try {
+
+      const id = req.params.id;
+
+      const findCategory = await categoryModel.findOne({_id:id})
+
+      if(!findCategory)
+      {
+
+          return res.status(404).json({
+            errors:[{msg:'category not found'}] 
+          });
+      }
+
+      else {
+        await categoryModel.deleteOne({_id:id});
+        return res.status(200).json({
+            msg:'category has deleted succesfuly'
+        });
+      }
+
+      
+    } catch (error) {
+
+          return res.status(500).json({
+            error
+         });
+    }
+
+  }
+
+  async allCategories(req,res){
+
+    try {
+
+      const categories = await categoryModel.find({});
+
+      return res.status(200).json({
+        categories
+      })
+      
+    } catch (error) {
+      
     }
 
   }

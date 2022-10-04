@@ -7,7 +7,12 @@ const Authotization = require('../services/Authorization');
 router.post("/create-category",categoryValidator,Authotization.authorized,categoryController.create);
 router.get('/categories/:page',categoryController.categories);
 router.get('/category/:id',categoryController.findByIdCategory);
-router.put("/category",Authotization.authorized,categoryController.updateCategory);
+router.put("/category",Authotization.authorized,categoryValidator,categoryController.updateCategory);
+
+router.delete("/category/:id",categoryController.deletedCategory);
+
+router.get("/all-categories", categoryController.allCategories);
+
 
 module.exports = router;
 
