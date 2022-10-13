@@ -3,6 +3,8 @@ const formidable = require("formidable");
 const fs = require('fs');
 const { v4: uuidv4 } = require("uuid");
 const path = require("path");
+const { validationResult } = require("express-validator");
+
 
 class Product {
   async createProduct(req, res) {
@@ -168,6 +170,82 @@ class Product {
       }
     
   
+
+  }
+
+  async updateProduct(req,res) {
+
+      const errors = validationResult(req);
+
+      if (!errors.isEmpty()) {
+        const extractedErrors = [];
+        errors
+          .array({ onlyFirstError: true })
+          .map((err) => extractedErrors.push({ msg: err.msg }));
+
+        return res.status(400).json({
+          errors: extractedErrors,
+        });
+      }
+
+      else {
+
+          try {
+
+              const {_id,title,price,discount,stock,colors,sizes,description,categories} = req.body;
+
+              const response = await productSchema.updateOne({_id},{$set:
+               {title,price,discount,category:categories,stock,colors,sizes,description
+              }});
+
+              return res.status(200).json({
+                msg:'product has succefuly update'
+              })
+            
+          } catch (error) {
+             return res.status(500).json({
+                error
+             });
+          }
+
+      }
+  
+  }
+
+  
+
+  async deleteProduct(req,res) {
+    
+    const {id} = req.params;
+
+    const product = await productSchema.findOne({_id:id});
+
+
+        if (!product) {
+          return res.status(404).json({
+            msg: "product not found",
+          });
+        }
+
+        [1,2,3].forEach((number) => {
+            const key = `image${number}`;
+            let image = product[key]; 
+
+            let __dirname = path.resolve();
+            let imagePath = __dirname + `/../frontend/public/images/${image}`;
+         
+            fs.unlink(imagePath,(err) => {
+              
+                if(err)
+                {
+                 throw new Error(err); 
+                }
+            })
+        })
+        await productSchema.deleteOne({_id:id});
+        return res.status(200).json({
+          msg:'product succefuly'
+        })
 
   }
 }
