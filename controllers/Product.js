@@ -1,4 +1,5 @@
 const productSchema = require("../models/Product");
+const categoryModel = require("../models/Category");
 const formidable = require("formidable");
 const fs = require('fs');
 const { v4: uuidv4 } = require("uuid");
@@ -248,6 +249,79 @@ class Product {
         })
 
   }
+
+  async getProductsByCategorty(req,res)
+  {
+      const {name,page,keyword} = req.params;
+
+      const perPage = 4;
+
+      const skip = (page - 1) * perPage;
+
+      if(page)
+      {
+         try {             
+            if(name)
+            {
+              const count = await productSchema
+               .find({ category: name })
+               .where("stock")
+               .gt(0)
+               .countDocuments();
+
+               const products = await productSchema
+                 .find({ category: name })
+                 .skip(skip)
+                 .limit(perPage)
+                 .sort({ updatedAt: -1 });
+
+                return res.status(200).json({
+                  products,
+                  count,
+                  perPage,
+                });
+            }
+            else {
+               const count = await productSchema
+                 .find({ title: { $regex:keyword }})
+                 .where("stock")
+                 .gt(0)
+                 .countDocuments();
+
+                  const products = await productSchema
+                    .find({ title: { $regex:keyword }})
+                    .skip(skip)
+                    .limit(perPage)
+                    .sort({ updatedAt: -1 });
+
+                  return res.status(200).json({
+                    products,
+                    count,
+                    perPage,
+                  });
+            }
+         } catch (error) {
+           return res.status(500).json({
+             error: error.message,
+           });
+         }  
+      }
+      else {
+         const products = await productSchema
+           .find({ category: name })
+           .where("stock")
+           .gt(0)
+           .limit(4)
+           .sort({ updatedAt: -1 });
+
+            return res.status(200).json({
+              products,
+            });
+            
+      }
+        
+  }
+
 }
 
 module.exports = new Product;

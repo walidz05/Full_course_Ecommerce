@@ -10,7 +10,7 @@ exports.hashPassword = async (password) => {
 }
 
 exports.createToken = (user, JWT_SECRET) => {
-  const token = jwt.sign({ id: user._id, name: user.name }, JWT_SECRET, {
+  const token = jwt.sign({ id: user._id, name: user.name,email:user.email }, JWT_SECRET, {
     expiresIn: "7d",
   });
   return token;

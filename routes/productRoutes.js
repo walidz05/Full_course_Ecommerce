@@ -30,4 +30,11 @@ router.delete(
   productController.deleteProduct
 );
 
+router.get('/products-by-category/:name/:page?',productController.getProductsByCategorty);
+
+router.get(
+  "/search-products/:keyword/:page?",
+  productController.getProductsByCategorty
+);
+
 module.exports = router;

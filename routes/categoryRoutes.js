@@ -23,4 +23,6 @@ router.delete("/category/:id", categoryController.deletedCategory);
 
 router.get("/all-categories", categoryController.allCategories);
 
+router.get('/random-categories',categoryController.randomCatgories);
+
 module.exports = router;

@@ -194,6 +194,27 @@ class Category {
     }
 
   }
+
+  async randomCatgories(req,res){
+    
+    try {
+
+        const categories = await categoryModel.aggregate([
+          {$sample : {size:3} }
+        ]);
+
+        return res.status(200).json({
+          categories
+        })
+      
+    } catch (error) {
+          return res.status(500).json({
+              error
+          });
+    }
+
+  }
+
 }
 
 module.exports = new Category;

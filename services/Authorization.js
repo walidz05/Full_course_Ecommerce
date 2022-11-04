@@ -4,33 +4,32 @@ const {JWT_SECRET} = require('../config/envConfig');
 class Authotization {
       authorized (req,res,next){
       
-        
-                  const tokenHeader = req.headers.authorization;
-              
-                   if (tokenHeader) {
+              const tokenHeader = req.headers.authorization;
+          
+                if (tokenHeader) {
 
-                   const token = tokenHeader.split('Bearer ')[1];
-                        
-                   const verify = jwt.verify(token,JWT_SECRET);
+                const token = tokenHeader.split('Bearer ')[1];
+                    
+                const verify = jwt.verify(token,JWT_SECRET);
 
-                   if(verify)
-                   {
-                         next();
-                  }
-                  else {
+                if(verify)
+                {
+                    next();
+                }
 
-                        return res.status(401).json({
-                          errors: [{ msg: "invalid token" }],
-                        });  
-                  }
+              else {
+                    return res.status(401).json({
+                      errors: [{ msg: "invalid token" }],
+                    });  
+              }
                    
-                   } else {
-                     return res.status(401).json({
-                       errors: [
-                         { msg: "you are not authenticated please log in" },
-                       ],
-                     });
-                   }
+                } else {
+                  return res.status(401).json({
+                    errors: [
+                      { msg: "you are not authenticated please log in" },
+                    ],
+                  });
+                }
          
 
       }
