@@ -1,20 +1,24 @@
 const OrderModel = require('../models/Order');
+const reviewModel = require('../models/Review');
+const productModel = require('../models/Product');
 
 class Order{
 
       async getOrders(req,res)
       {
 
-        const page = req.params.page;
+      const query = req.query;
 
-        const perPage = 4;
+      const perPage = 4;
 
-        const skip = (page - 1) * perPage;
+      const skip = (query.page - 1) * perPage;
+
+      const option = query.userId ? {userId:query.userId} : {};
 
       try {
-            
-      const count = await OrderModel.find({}).countDocuments();
-      const orders = await OrderModel.find({})
+    
+      const count = await OrderModel.find(option).countDocuments();
+      const orders = await OrderModel.find(option)
         .populate(
           "productId",
           "-colors -sizes -createdAt -updatedAt -image2 -image3"
@@ -32,7 +36,7 @@ class Order{
             
       } catch (error) {
           return res.status(500).json({
-            error,
+            msg:error.message
           });  
       } 
       }
@@ -63,28 +67,75 @@ class Order{
 
       async delivred(req,res)
       {
-        const {id} = req.params;
+         const { id, status } = req.query;
 
+         let option = {};
+
+         //by admin
+         if (status === "delivered") {
+           option = { status: true };
+         }
+
+         //by user
+         else if (status === "received") {
+           option = { received: true };
+         }
+
+         try {
+           const updateReceived = await OrderModel.findByIdAndUpdate(
+             id,
+             option,
+             { new: true }
+           );
+
+           return res.status(200).json({
+             msg:
+               status === "delivered"
+                 ? "order has delivered"
+                 : status === "received" && "Order has received",
+           });
+         } catch (error) {
+           return res.status(500).json({
+             error,
+           });
+         }
+      }  
+
+      async createReview(req,res)
+      {
+
+        const {rating,comment,user,product,order} = req.body;        
         try {
 
-          const order = await OrderModel.findOne({_id:id});
+            const review = await reviewModel.create({
+              rating: parseInt(rating),
+              comment,
+              product: product,
+              user: user.id,
+            });
 
-          if(order)
-          {
-            const updateDeliverd = await OrderModel.findByIdAndUpdate(id,{status:true},{new:true})
-            
+            await OrderModel.findByIdAndUpdate(
+              order._id,
+              { review: true },
+              { new: true }
+            );
+
+            await productModel.findOneAndUpdate(
+              { _id: product },
+              { $push: { reviews: review._id } },
+              { new: true }
+            );
+
             return res.status(200).json({
-              msg:'delivred status has updated succesufly'
-            })
-          }
+              msg: "created has created successfuly",
+            });
 
         } catch (error) {
-          return res.status(500).json({
-            error
+          return res.status(400).json({
+            errors:error.message
           })
         }
-      }
-
+      }   
 }
 
 

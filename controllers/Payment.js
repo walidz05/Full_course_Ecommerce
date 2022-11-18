@@ -2,12 +2,13 @@ const OrderModel = require("../models/Order");
 const ProductModel = require("../models/Product");
 const stripe = require("stripe")(process.env.STRIPE_KEY);
 
-
 class Payment {
   async CheckoutSission(req, res, next) {
+
     const { cart, user } = req.body;
 
     const orderData = cart.map((item) => {
+
       return {
         _id: item._id,
         size: item.size,
@@ -104,20 +105,32 @@ class Payment {
         // Then define and call a function to handle the event payment_intent.succeeded
         break;
 
-      case "checkout.session.completed":
+        case "checkout.session.completed":
         const data = event.data.object;
         let customer = await stripe.customers.retrieve(data.customer);
         customer = JSON.parse(customer?.metadata?.cart);
 
         customer.forEach(async (item) => {
+
           try {
-            await OrderModel.create({
-              productId: item._id,
-              userId: item.userId,
-              size: item.size,
-              color: item.color,
-              quantites: item.quantity,
-              address: data.customer_details.address,
+
+              let reviewStatus = false;
+
+              const findOrder = OrderModel.findOne({productId:item._id,userId:item.userId}).where('review').equals(true);
+
+              if(findOrder)
+              {
+                  reviewStatus = true;
+              }
+
+              await OrderModel.create({
+                productId: item._id,
+                userId: item.userId,
+                size: item.size,
+                color: item.color,
+                quantites: item.quantity,
+                address: data.customer_details.address,
+                review:reviewStatus
             });
 
             const product = await ProductModel.findOne({ _id: item._id });
@@ -152,7 +165,9 @@ class Payment {
   }
 
   async verifyPayment(req,res){
-      const {id}  = req.params;   
+    
+      const {id}  = req.params;
+
       try {
         const session = await stripe.checkout.sessions.retrieve(id);
       

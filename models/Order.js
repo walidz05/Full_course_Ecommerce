@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const orderSchema = mongoose.Schema(
   {
+
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "product",
@@ -41,6 +42,11 @@ const orderSchema = mongoose.Schema(
       default: false,
       type: Boolean,
     },
+    
+    review:{
+      default:false,
+      type:Boolean
+    }
     
   },
   { timestamps: true }
