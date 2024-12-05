@@ -9,7 +9,7 @@ const productRoutes = require('./routes/productRoutes');
 const paymentRoutes = require('./routes/payment');
 const orderRoutes = require('./routes/order');
 const bodyParser = require("body-parser");
-const port = PORT || 6000;
+const port = PORT || 5000;
 
 
 app.listen(port, () => {
