@@ -9,7 +9,8 @@ const productRoutes = require('./routes/productRoutes');
 const paymentRoutes = require('./routes/payment');
 const orderRoutes = require('./routes/order');
 const bodyParser = require("body-parser");
-const port = PORT || 5000;
+const port = PORT || 6000;
+
 
 app.listen(port, () => {
 console.log(`port is runing on ${port}`);
